@@ -20,6 +20,55 @@ def _load_env_template() -> str:
     raise FileNotFoundError("Could not find bundled or source .env.example template.")
 
 
+def guard_lock() -> None:
+    """Encrypt .env in place (registered as `fcc-guard-lock` script)."""
+    from guard.cipher import lock
+
+    locked = lock()
+    print(
+        "fcc-guard: locked" if locked else "fcc-guard: already locked or no .env found"
+    )
+
+
+def guard_unlock() -> None:
+    """Decrypt .env back from .env.enc (registered as `fcc-guard-unlock` script)."""
+    from guard.cipher import unlock
+
+    unlocked = unlock()
+    print("fcc-guard: unlocked" if unlocked else "fcc-guard: nothing to unlock")
+
+
+_GUARD_BANNER = """\
+╔══════════════════════════════════════════════════════════════╗
+║                    fcc-guard is active                       ║
+╠══════════════════════════════════════════════════════════════╣
+║  WHY                                                         ║
+║  Your .env file contains API keys and secrets. Without       ║
+║  protection, Claude can read it via the Read tool and the    ║
+║  contents end up in the model's context window.              ║
+║                                                              ║
+║  HOW IT WORKS                                                ║
+║  Each time you submit a prompt, the proxy encrypts .env      ║
+║  with AES-128 (Fernet). The plaintext is gone before the     ║
+║  request reaches the model. The running server is unaffected ║
+║  because settings are already loaded in memory.              ║
+║                                                              ║
+║  TO RESTORE YOUR .env WHEN DONE                              ║
+║    fcc-guard-unlock                                          ║
+╚══════════════════════════════════════════════════════════════╝
+"""
+
+
+def fcc_claude() -> None:
+    """Launch Claude CLI with the fcc-guard banner (registered as `fcc-claude` script)."""
+    import subprocess
+    import sys
+
+    print(_GUARD_BANNER)
+    result = subprocess.run(["claude", *sys.argv[1:]])
+    sys.exit(result.returncode)
+
+
 def serve() -> None:
     """Start the FastAPI server (registered as `free-claude-code` script)."""
     import uvicorn

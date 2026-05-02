@@ -65,5 +65,14 @@ def test_pyproject_first_party_packages_match_packaged_roots() -> None:
         for item in match.group("items").split(",")
         if item.strip()
     }
-    expected = {"api", "cli", "config", "core", "messaging", "providers", "smoke"}
+    expected = {
+        "api",
+        "cli",
+        "config",
+        "core",
+        "guard",
+        "messaging",
+        "providers",
+        "smoke",
+    }
     assert configured == expected

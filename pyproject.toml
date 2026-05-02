@@ -22,11 +22,15 @@ dependencies = [
     "openai>=2.32.0",
     "loguru>=0.7.0",
     "aiohttp>=3.13.4",
+    "cryptography>=42.0.0",
 ]
 
 [project.scripts]
 free-claude-code = "cli.entrypoints:serve"
 fcc-init = "cli.entrypoints:init"
+fcc-guard-lock = "cli.entrypoints:guard_lock"
+fcc-guard-unlock = "cli.entrypoints:guard_unlock"
+fcc-claude = "cli.entrypoints:fcc_claude"
 
 [project.optional-dependencies]
 voice = [
@@ -42,7 +46,7 @@ voice_local = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["api", "cli", "config", "core", "messaging", "providers"]
+packages = ["api", "cli", "config", "core", "guard", "messaging", "providers"]
 
 [tool.hatch.build.targets.wheel.force-include]
 ".env.example" = "cli/env.example"
@@ -89,7 +93,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "cli", "config", "core", "messaging", "providers", "smoke"]
+known-first-party = ["api", "cli", "config", "core", "guard", "messaging", "providers", "smoke"]
 
 [tool.ruff.format]
 quote-style = "double"

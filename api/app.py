@@ -13,6 +13,8 @@ from starlette.types import Receive, Scope, Send
 
 from config.logging_config import configure_logging
 from config.settings import get_settings
+from guard.env_hook import EnvLockHook
+from guard.hooks import HookEvent, HookRegistry
 from providers.exceptions import ProviderError
 
 from .routes import router
@@ -93,6 +95,17 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
     if lifespan_enabled:
         app_kwargs["lifespan"] = lifespan
     app = FastAPI(**app_kwargs)
+
+    # Guard middleware: fires PRE_FORWARD hooks before each /v1/messages request.
+    # Unlock is intentionally manual-only via `fcc-guard-unlock`.
+    _registry = HookRegistry()
+    _registry.register(HookEvent.PRE_FORWARD, EnvLockHook())
+
+    @app.middleware("http")
+    async def guard_middleware(request: Request, call_next):
+        if request.method == "POST" and request.url.path == "/v1/messages":
+            await _registry.fire(HookEvent.PRE_FORWARD)
+        return await call_next(request)
 
     # Register routes
     app.include_router(router)

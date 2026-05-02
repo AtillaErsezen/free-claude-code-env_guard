@@ -82,3 +82,49 @@ def test_init_prints_next_step_hint(tmp_path: Path) -> None:
     output, _ = _run_init(tmp_path)
 
     assert "free-claude-code" in output
+
+
+def test_fcc_claude_prints_banner_and_forwards_args() -> None:
+    """fcc_claude() prints the guard banner then launches `claude` with forwarded args."""
+    import subprocess
+    import sys
+    from unittest.mock import MagicMock, patch
+
+    from cli.entrypoints import _GUARD_BANNER, fcc_claude
+
+    mock_result = MagicMock()
+    mock_result.returncode = 0
+
+    with (
+        patch("sys.argv", ["fcc-claude", "--version"]),
+        patch("subprocess.run", return_value=mock_result) as mock_run,
+        patch("sys.exit") as mock_exit,
+        patch("builtins.print") as mock_print,
+    ):
+        fcc_claude()
+
+    mock_run.assert_called_once_with(["claude", "--version"])
+    mock_exit.assert_called_once_with(0)
+    printed = mock_print.call_args[0][0]
+    assert "fcc-guard is active" in printed
+    assert "fcc-guard-unlock" in printed
+
+
+def test_fcc_claude_forwards_exit_code() -> None:
+    """fcc_claude() passes the claude subprocess exit code to sys.exit."""
+    from unittest.mock import MagicMock, patch
+
+    from cli.entrypoints import fcc_claude
+
+    mock_result = MagicMock()
+    mock_result.returncode = 2
+
+    with (
+        patch("sys.argv", ["fcc-claude"]),
+        patch("subprocess.run", return_value=mock_result),
+        patch("sys.exit") as mock_exit,
+        patch("builtins.print"),
+    ):
+        fcc_claude()
+
+    mock_exit.assert_called_once_with(2)
