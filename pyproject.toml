@@ -31,6 +31,7 @@ fcc-init = "cli.entrypoints:init"
 fcc-guard-lock = "cli.entrypoints:guard_lock"
 fcc-guard-unlock = "cli.entrypoints:guard_unlock"
 fcc-claude = "cli.entrypoints:fcc_claude"
+".env-guard" = "cli.entrypoints:fcc_claude"
 
 [project.optional-dependencies]
 voice = [
