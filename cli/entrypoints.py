@@ -48,73 +48,50 @@ def guard_unlock() -> None:
 # ANSI colour codes — suppressed when stdout is not a real terminal.
 _USE_COLOR = _sys.stdout.isatty()
 
-_B = "\033[34m" if _USE_COLOR else ""  # blue   (border)
+_B = "\033[34m" if _USE_COLOR else ""    # blue   (border)
 _T = "\033[1;32m" if _USE_COLOR else ""  # bold green (title)
-_Y = "\033[33m" if _USE_COLOR else ""  # yellow (section headings)
-_D = "\033[2m" if _USE_COLOR else ""  # dim    (body text)
-_R = "\033[0m" if _USE_COLOR else ""  # reset
+_Y = "\033[33m" if _USE_COLOR else ""    # yellow (section headings)
+_G = "\033[90m" if _USE_COLOR else ""    # gray   (body text)
+_R = "\033[0m" if _USE_COLOR else ""     # reset
 
-# Inner width (visible characters between the two ║ borders, including spaces).
-_W = 60
-_TOP = f"{_B}╔{'═' * _W}╗{_R}"
-_MID = f"{_B}╠{'═' * _W}╣{_R}"
-_BOT = f"{_B}╚{'═' * _W}╝{_R}"
-
-
-def _row(text: str = "", *, visible_len: int = 0) -> str:
-    """Return one box row, padding *text* to _W visible characters.
-
-    *visible_len* must equal len(text) minus the total byte-length of any
-    embedded ANSI escape sequences — i.e. the number of printed columns.
-    """
-    pad = _W - 2 - visible_len  # 2 for the leading space after ║
-    return f"{_B}║{_R} {text}{' ' * pad} {_B}║{_R}"
+# Total box width is 62 (1 border + 60 inner + 1 border).
+_IW = 60
+_TOP = f"{_B}╔{'═' * _IW}╗{_R}"
+_MID = f"{_B}╠{'═' * _IW}╣{_R}"
+_BOT = f"{_B}╚{'═' * _IW}╝{_R}"
 
 
-def _plain(label: str) -> str:
-    """A plain (uncoloured) row."""
-    return _row(label, visible_len=len(label))
+def _row(text: str, color: str = "", visible_len: int | None = None) -> str:
+    """Return a 60-column inner row. visible_len defaults to len(text)."""
+    vlen = visible_len if visible_len is not None else len(text)
+    pad = _IW - 2 - vlen
+    return f"{_B}║{_R} {color}{text}{_R}{' ' * pad} {_B}║{_R}"
 
 
-def _section(label: str) -> str:
-    """A yellow section-heading row."""
-    return _row(f"{_Y}{label}{_R}", visible_len=len(label))
+# Hardcoded title row for absolute alignment precision.
+# 1 (║) + 19 (spaces) + 22 (.env...) + 1 (🛡️ rendered width) + 18 (spaces) + 1 (║) = 62 total width.
+_TITLE_ROW = f"{_B}║{_R}                   {_T}.env guard is active  🛡️{_R}                  {_B}║{_R}"
 
-
-def _body(label: str) -> str:
-    """A dim body-text row."""
-    return _row(f"{_D}{label}{_R}", visible_len=len(label))
-
-
-_TITLE = " .env guard is active  🛡️"
-_TITLE_VISIBLE = len(_TITLE)  # 🛡️ is 2 codepoints & 2 terminal cols — no offset needed
-_title_pad = (_W - 2 - _TITLE_VISIBLE) // 2  # centre the title
-
-_GUARD_BANNER = "\n".join(
-    [
-        _TOP,
-        _row(
-            f"{' ' * _title_pad}{_T}{_TITLE}{_R}",
-            visible_len=_title_pad + _TITLE_VISIBLE,
-        ),
-        _MID,
-        _section("WHY"),
-        _body("Your .env files contain API keys and secrets. Without"),
-        _body("protection, Claude can read them via the Read tool and"),
-        _body("the contents end up in the model's context window."),
-        _plain(""),
-        _section("HOW IT WORKS"),
-        _body("Each time you submit a prompt, the proxy encrypts .env"),
-        _body("files with AES-128 (Fernet). The plaintext is gone before"),
-        _body("the request reaches the model. The running server is"),
-        _body("unaffected because settings are already loaded in memory."),
-        _plain(""),
-        _section("AUTOMATIC RESTORE"),
-        _body("Your .env files are restored automatically after each"),
-        _body("response."),
-        _BOT,
-    ]
-)
+_GUARD_BANNER = "\n".join([
+    _TOP,
+    _TITLE_ROW,
+    _MID,
+    _row("WHY", _Y),
+    _row("Your .env files contain API keys and secrets. Without", _G),
+    _row("protection, Claude can read them via the Read tool and", _G),
+    _row("the contents end up in the model's context window.", _G),
+    _row(""),
+    _row("HOW IT WORKS", _Y),
+    _row("Each time you submit a prompt, the proxy encrypts .env", _G),
+    _row("files with AES-128 (Fernet). The plaintext is gone before", _G),
+    _row("the request reaches the model. The running server is", _G),
+    _row("unaffected because settings are already loaded in memory.", _G),
+    _row(""),
+    _row("AUTOMATIC RESTORE", _Y),
+    _row("Your .env files are restored automatically after each", _G),
+    _row("response.", _G),
+    _BOT,
+])
 
 
 def fcc_claude() -> None:
