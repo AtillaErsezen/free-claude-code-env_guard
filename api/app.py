@@ -116,11 +116,16 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
             and response.status_code == 401
         ):
             _head_root_401_noted = True
-            print(
-                'NOTE: "HEAD / HTTP/1.1" 401 Unauthorized — '
-                "expected probe from Claude Code, safely ignored.",
-                flush=True,
-            )
+            from starlette.background import BackgroundTask
+
+            def _print_note() -> None:
+                print(
+                    'NOTE: "HEAD / HTTP/1.1" 401 Unauthorized — '
+                    "expected probe from Claude Code, safely ignored.",
+                    flush=True,
+                )
+
+            response.background = BackgroundTask(_print_note)
         return response
 
     # Register routes
