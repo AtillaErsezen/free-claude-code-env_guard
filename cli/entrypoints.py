@@ -64,6 +64,9 @@ def fcc_claude() -> None:
     import subprocess
     import sys
 
+    from guard.setup import ensure_claude_stop_hook
+
+    ensure_claude_stop_hook()
     print(_GUARD_BANNER)
     result = subprocess.run(["claude", *sys.argv[1:]])
     sys.exit(result.returncode)

@@ -86,11 +86,9 @@ def test_init_prints_next_step_hint(tmp_path: Path) -> None:
 
 def test_fcc_claude_prints_banner_and_forwards_args() -> None:
     """fcc_claude() prints the guard banner then launches `claude` with forwarded args."""
-    import subprocess
-    import sys
     from unittest.mock import MagicMock, patch
 
-    from cli.entrypoints import _GUARD_BANNER, fcc_claude
+    from cli.entrypoints import fcc_claude
 
     mock_result = MagicMock()
     mock_result.returncode = 0
