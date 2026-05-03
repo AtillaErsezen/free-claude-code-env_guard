@@ -105,7 +105,7 @@ def test_fcc_claude_prints_banner_and_forwards_args() -> None:
     mock_exit.assert_called_once_with(0)
     printed = mock_print.call_args[0][0]
     assert "fcc-guard is active" in printed
-    assert "fcc-guard-unlock" in printed
+    assert "AUTOMATIC RESTORE" in printed
 
 
 def test_fcc_claude_forwards_exit_code() -> None:

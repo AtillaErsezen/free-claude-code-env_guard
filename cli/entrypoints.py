@@ -53,8 +53,8 @@ _GUARD_BANNER = """\
 ║  request reaches the model. The running server is unaffected ║
 ║  because settings are already loaded in memory.              ║
 ║                                                              ║
-║  TO RESTORE YOUR .env WHEN DONE                              ║
-║    fcc-guard-unlock                                          ║
+║  AUTOMATIC RESTORE                                           ║
+║  Your .env is restored automatically after each response.    ║
 ╚══════════════════════════════════════════════════════════════╝
 """
 
