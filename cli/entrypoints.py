@@ -86,15 +86,16 @@ def _body(label: str) -> str:
     return _row(f"{_D}{label}{_R}", visible_len=len(label))
 
 
-_TITLE = ".env guard is active"
-_title_pad = (_W - 2 - len(_TITLE)) // 2  # centre the title
+_TITLE = " .env guard is active  🛡️"
+_TITLE_VISIBLE = len(_TITLE)  # 🛡️ is 2 codepoints & 2 terminal cols — no offset needed
+_title_pad = (_W - 2 - _TITLE_VISIBLE) // 2  # centre the title
 
 _GUARD_BANNER = "\n".join(
     [
         _TOP,
         _row(
             f"{' ' * _title_pad}{_T}{_TITLE}{_R}",
-            visible_len=_title_pad + len(_TITLE),
+            visible_len=_title_pad + _TITLE_VISIBLE,
         ),
         _MID,
         _section("WHY"),
