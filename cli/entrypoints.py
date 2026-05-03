@@ -21,21 +21,25 @@ def _load_env_template() -> str:
 
 
 def guard_lock() -> None:
-    """Encrypt .env in place (registered as `fcc-guard-lock` script)."""
-    from guard.cipher import lock
+    """Encrypt all .env variants in place (registered as `fcc-guard-lock` script)."""
+    from guard.cipher import lock_all
 
-    locked = lock()
+    count = lock_all()
     print(
-        "fcc-guard: locked" if locked else "fcc-guard: already locked or no .env found"
+        f"fcc-guard: locked {count} file(s)" if count else "fcc-guard: nothing to lock"
     )
 
 
 def guard_unlock() -> None:
-    """Decrypt .env back from .env.enc (registered as `fcc-guard-unlock` script)."""
-    from guard.cipher import unlock
+    """Decrypt all .env.enc sidecars (registered as `fcc-guard-unlock` script)."""
+    from guard.cipher import unlock_all
 
-    unlocked = unlock()
-    print("fcc-guard: unlocked" if unlocked else "fcc-guard: nothing to unlock")
+    count = unlock_all()
+    print(
+        f"fcc-guard: unlocked {count} file(s)"
+        if count
+        else "fcc-guard: nothing to unlock"
+    )
 
 
 _GUARD_BANNER = """\
@@ -43,18 +47,19 @@ _GUARD_BANNER = """\
 ║                    fcc-guard is active                       ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  WHY                                                         ║
-║  Your .env file contains API keys and secrets. Without       ║
-║  protection, Claude can read it via the Read tool and the    ║
+║  Your .env files contain API keys and secrets. Without       ║
+║  protection, Claude can read them via the Read tool and the    ║
 ║  contents end up in the model's context window.              ║
 ║                                                              ║
 ║  HOW IT WORKS                                                ║
-║  Each time you submit a prompt, the proxy encrypts .env      ║
+║  Each time you submit a prompt, the proxy encrypts .env files  ║
 ║  with AES-128 (Fernet). The plaintext is gone before the     ║
 ║  request reaches the model. The running server is unaffected ║
 ║  because settings are already loaded in memory.              ║
 ║                                                              ║
 ║  AUTOMATIC RESTORE                                           ║
-║  Your .env is restored automatically after each response.    ║
+║  Your .env files are restored automatically after each       ║
+║  response.                                                   ║
 ╚══════════════════════════════════════════════════════════════╝
 """
 

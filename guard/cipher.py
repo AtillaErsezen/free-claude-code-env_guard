@@ -9,6 +9,19 @@ from cryptography.fernet import Fernet
 _DEFAULT_KEY_FILE = Path.home() / ".config" / "free-claude-code" / ".env.key"
 _DEFAULT_ENV = Path(".env")
 _DEFAULT_ENC = Path(".env.enc")
+
+# All dotenv filename variants that fcc-guard protects.
+# Each plain file gets an encrypted <name>.enc sidecar.
+ENV_GLOB_PATTERNS: tuple[str, ...] = (
+    ".env",
+    ".env.development",
+    ".env.dev",
+    ".env.local",
+    ".env.test",
+    ".env.staging",
+    ".env.prod",
+    ".env.production",
+)
 _LOCKED_MARKER = b"# locked by fcc-guard\n"
 
 
@@ -51,3 +64,25 @@ def unlock(
     env.write_bytes(content)
     enc.unlink()
     return True
+
+
+def lock_all(cwd: Path = Path("."), key_file: Path = _DEFAULT_KEY_FILE) -> int:
+    """Encrypt every matching dotenv file in *cwd*. Returns count of newly locked files."""
+    locked = 0
+    for name in ENV_GLOB_PATTERNS:
+        env = cwd / name
+        enc = cwd / (name + ".enc")
+        if lock(env, enc, key_file):
+            locked += 1
+    return locked
+
+
+def unlock_all(cwd: Path = Path("."), key_file: Path = _DEFAULT_KEY_FILE) -> int:
+    """Decrypt every matching dotenv sidecar in *cwd*. Returns count of unlocked files."""
+    unlocked = 0
+    for name in ENV_GLOB_PATTERNS:
+        env = cwd / name
+        enc = cwd / (name + ".enc")
+        if unlock(env, enc, key_file):
+            unlocked += 1
+    return unlocked

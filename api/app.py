@@ -101,11 +101,27 @@ def create_app(*, lifespan_enabled: bool = True) -> FastAPI:
     _registry = HookRegistry()
     _registry.register(HookEvent.PRE_FORWARD, EnvLockHook())
 
+    _head_root_401_noted = False
+
     @app.middleware("http")
     async def guard_middleware(request: Request, call_next):
+        nonlocal _head_root_401_noted
         if request.method == "POST" and request.url.path == "/v1/messages":
             await _registry.fire(HookEvent.PRE_FORWARD)
-        return await call_next(request)
+        response = await call_next(request)
+        if (
+            not _head_root_401_noted
+            and request.method == "HEAD"
+            and request.url.path == "/"
+            and response.status_code == 401
+        ):
+            _head_root_401_noted = True
+            print(
+                'NOTE: "HEAD / HTTP/1.1" 401 Unauthorized — '
+                "expected probe from Claude Code, safely ignored.",
+                flush=True,
+            )
+        return response
 
     # Register routes
     app.include_router(router)

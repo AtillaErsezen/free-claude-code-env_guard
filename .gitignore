@@ -7,7 +7,15 @@ __pycache__
 .venv
 agent_workspace
 .env
+# fcc-guard encrypted sidecars — all dotenv variant ciphertexts
 .env.enc
+.env.development.enc
+.env.dev.enc
+.env.local.enc
+.env.test.enc
+.env.staging.enc
+.env.prod.enc
+.env.production.enc
 server.log
 debug-*.log
 .coverage

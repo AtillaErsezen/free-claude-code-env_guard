@@ -61,12 +61,12 @@ async def test_env_lock_hook_calls_cipher(tmp_path, monkeypatch) -> None:
     from guard.env_hook import EnvLockHook
 
     calls: list[str] = []
-    monkeypatch.setattr("guard.env_hook.lock", lambda: calls.append("lock"))
+    monkeypatch.setattr("guard.env_hook.lock_all", lambda: calls.append("lock_all"))
 
     hook = EnvLockHook()
     await hook.run(HookEvent.PRE_FORWARD)
 
-    assert calls == ["lock"]
+    assert calls == ["lock_all"]
 
 
 @pytest.mark.asyncio
@@ -74,9 +74,9 @@ async def test_env_unlock_hook_calls_cipher(tmp_path, monkeypatch) -> None:
     from guard.env_hook import EnvUnlockHook
 
     calls: list[str] = []
-    monkeypatch.setattr("guard.env_hook.unlock", lambda: calls.append("unlock"))
+    monkeypatch.setattr("guard.env_hook.unlock_all", lambda: calls.append("unlock_all"))
 
     hook = EnvUnlockHook()
     await hook.run(HookEvent.POST_FORWARD)
 
-    assert calls == ["unlock"]
+    assert calls == ["unlock_all"]
